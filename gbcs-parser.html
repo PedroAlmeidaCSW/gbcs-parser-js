@@ -1296,6 +1296,14 @@ function parseGbcsMessage(text) {
       0x1001: "Generic Non Critical Alert",
       0xC212: "DMM WriteConfiguration (DMM1.14)",
       0xC223: "DMM EnableCADg (DMM1.30)",
+      0xC209: "DMM ForceTimeSync (DMM1.8)",
+      0xC20A: "DMM DistributeFirmwareToCHF (DMM1.9)",
+      0xC218: "DMM DistributeFirmwareToHANDevice (DMM1.20)",
+      0xC602: "DMM BirthEvent Alert (DMM2.2)",
+      0xC608: "DMM NewFirmwareDownloadStatus Alert (DMM2.6)",
+      0xC60B: "DMM PushTimeSync Alert (DMM2.7)",
+      0xC60F: "DMM UnplannedReboot Alert (DMM2.11)",
+      0xC611: "DMM SupplyOutageRestored Alert (DMM2.13)"
     };
     var messageCode = parseNumber(x, 2);
     putBytes(name, getBytes(x, 2), usecases[messageCode]);
@@ -2067,7 +2075,13 @@ function parseGbcsMessage(text) {
   }
 
   function parseDlmsAccessResponse(x, messageCode) {
-    putBytes("DLMS Access Response", getBytes(x, 7));
+    putBytes("DLMS Access Response", getBytes(x, 6));
+    if (x.input[x.index] !== 0) {
+        putBytes("DLMS Access Request Specification", getBytes(x, 1), "Present");
+        parseDlmsSequenceOf(x, "List of Access Request Specifications", parseDlmsAccessRequestSpecification);
+    } else {
+        putBytes("DLMS Access Request Specification", getBytes(x, 1), "Not Present");
+    }
     switch (messageCode) {
       case 0x0027:  // ECS17b
       case 0x0029:  // ECS17d
